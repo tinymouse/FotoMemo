@@ -76,14 +76,23 @@
     </ons-template>
     
     <style>
-        .toolbar {
-            background-color: lightsteelblue;
+        ons-toolbar {
+            background-color: steelblue !important;
+        }
+        ons-toolbar div {
+            color: white !important;
+        }
+        ons-back-button i {
+            color: white !important;
+        }
+        ons-toolbar-button {
+            color: white !important;
         }
     </style>
-    
+        
     <ons-template id="list-page">
         <ons-page id="list-page">
-            <ons-toolbar style="background-color: lightsteelblue;">
+            <ons-toolbar>
                 <div class="left">
                     <ons-toolbar-button class="js-menu"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button>
                 </div>
@@ -119,6 +128,16 @@
             margin: 10px;
         }
     </style>
+
+    <script>
+        var dateFormat = 'yy/mm/dd HH:ii';
+        var dateOption = {
+            lang: 'en',
+            dateOrder: 'yymmdd',
+            dateFormat: 'yy/mm/dd',
+            timeFormat: 'HH:ii'
+        };
+    </script>
     
     <script type="text/template" id="entry-item-template">
         <li class="list-item">
@@ -127,15 +146,15 @@
                     <div class="imageBox" style="background-image: url('<%= url %>')"></div>
                 </ons-col>
                 <ons-col align="center">
-                    <span calss="datetimeLabel"><%= savedTime %></span>
+                    <span calss="savedTime"><%= savedTime %></span>
                 </ons-col>
             </ons-row>
         </li>
-    </script>        
+    </script> 
 
     <ons-template id="detail-page">
         <ons-page id="detail-page">
-            <ons-toolbar style="background-color: lightsteelblue;">
+            <ons-toolbar>
                 <div class="left"><ons-back-button>Back</ons-back-button></div>
                 <div class="center">Detail</div>
             </ons-toolbar>
@@ -164,7 +183,7 @@
     </ons-sliding-menu>
     
     <ons-template id="left-menu">
-        <ons-toolbar style="background-color: lightsteelblue;">
+        <ons-toolbar>
             <div class="right">
                 <ons-toolbar-button class="js-close" onClick="mainMenu.close()">
                     <ons-icon icon="fa-close"></ons-icon>

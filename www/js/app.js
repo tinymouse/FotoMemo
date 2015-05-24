@@ -54,7 +54,7 @@ ons.ready(function(){
         },
         mutators: {
             savedTime: function(){
-                return $.mobiscroll.formatDate('yy/mm/dd HH:ii', new Date(this.attributes.savedTime));
+                return $.mobiscroll.formatDate(dateFormat, new Date(this.attributes.savedTime));
             },
         },
     });
@@ -196,14 +196,10 @@ ons.ready(function(){
         },
         render: function(){
             this.stickit();
-            $(this.ui.savedTime).mobiscroll().datetime({
-                theme: 'mobiscroll',
-                lang: 'ja',
+            $(this.ui.savedTime).mobiscroll().datetime($.extend({
                 display: 'bottom',
-                dateOrder: 'yymmdd',
-                dateFormat: 'yy/mm/dd',
-                timeFormat: 'HH:ii'
-            });
+                theme: 'mobiscroll',
+            },dateOption));
             return this;
         },
         modelEvents: {
