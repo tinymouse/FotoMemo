@@ -1,0 +1,7 @@
+{
+    "jscodehints.detectedExclusions": [
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/www/lib/onsen/js/angular/angular.min.js",
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/www/lib/onsen/js/angular/angular.js",
+        "jquery.js"
+    ]
+}

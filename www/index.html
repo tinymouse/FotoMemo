@@ -68,22 +68,37 @@
     </p>
 -->
 
-    <ons-navigator var="mainNavi" page="list-page">
-    </ons-navigator>
-
+    <ons-template id="main-page">
+        <ons-navigator 
+            var="mainNavi"
+            page="list-page"> 
+        </ons-navigator>
+    </ons-template>
+    
+    <style>
+        .toolbar {
+            background-color: lightsteelblue;
+        }
+    </style>
+    
     <ons-template id="list-page">
         <ons-page id="list-page">
-            <ons-toolbar>
+            <ons-toolbar style="background-color: lightsteelblue;">
+                <div class="left">
+                    <ons-toolbar-button class="js-menu"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button>
+                </div>
                 <div class="center">FotoMemo</div>
                 <div class="right">
                     <ons-toolbar-button class="js-camera"><ons-icon icon="fa-camera"></ons-icon></ons-toolbar-button>
                 </div>
             </ons-toolbar>
-            <ul id="entry-list">
-            </ul>
+            <div id="list-container">
+                <ul id="entry-list">
+                </ul>
+            </div>
         </ons-page>
     </ons-template>
-
+    
     <style>
         .imageBox {
             background-position: center;
@@ -120,7 +135,7 @@
 
     <ons-template id="detail-page">
         <ons-page id="detail-page">
-            <ons-toolbar>
+            <ons-toolbar style="background-color: lightsteelblue;">
                 <div class="left"><ons-back-button>Back</ons-back-button></div>
                 <div class="center">Detail</div>
             </ons-toolbar>
@@ -137,7 +152,48 @@
             </ons-list>
         </ons-page>
     </ons-template>    
+
+    <ons-sliding-menu
+        var="mainMenu"
+        side="left"
+        type="overlay"
+        max-slide-distance="200px"
+        swipeable="true"
+        main-page="main-page"
+        menu-page="left-menu">
+    </ons-sliding-menu>
     
+    <ons-template id="left-menu">
+        <ons-toolbar style="background-color: lightsteelblue;">
+            <div class="right">
+                <ons-toolbar-button class="js-close" onClick="mainMenu.close()">
+                    <ons-icon icon="fa-close"></ons-icon>
+                </ons-toolbar-button>
+            </div>
+        </ons-toolbar>
+        <ons-list id="left-menu">
+            <ons-list-header>Folder</ons-list-header>
+            <ons-list-item modifier="tappable">
+                <label class="radio-button radio-button--list-item">
+                    <input type="radio" name="folder" id="folderInbox" checked="checked">
+                    <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
+                    Inbox
+                </label>
+            </ons-list-item>
+            <ons-list-item modifier="tappable">
+                <label class="radio-button radio-button--list-item">
+                    <input type="radio" name="folder" id="folderDeleted">
+                    <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
+                    Deleted
+                </label>
+            </ons-list-item>
+            <ons-list-header>Action</ons-list-header>
+            <ons-list-item modifier="tappable" id="buttonDelete">
+                Delete completely
+            </ons-list-item>
+        </ons-list>
+    </ons-template>
+
 <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->
 <!-- Place your remote debugging (weinre) script URL from the Test tab here, if it does not work below -->
     <!-- <script src="http://debug-software.intel.com/target/target-script-min.js#insertabiglongfunkynumberfromthexdkstesttab"></script> -->
@@ -158,6 +214,7 @@
     <script src="lib/onsen/js/onsenui.js"></script>
     
     <script src="lib/jquery.js"></script>
+    <script src="lib/stylelistener.jquery.js"></script>
     <script src="lib/json2.js"></script>
     <script src="lib/underscore.js"></script>
     <script src="lib/backbone.js"></script>

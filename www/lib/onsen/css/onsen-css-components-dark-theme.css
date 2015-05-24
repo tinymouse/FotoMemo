@@ -1708,14 +1708,14 @@ h6 {
       <label class="tab-bar__item">
         <input type="radio" name="tab-bar-b">
         <button class="tab-bar__button">
-          <i class="tab-bar__icon ion-ios7-cloud-outline"></i>
+          <i class="tab-bar__icon ion-ios-cloud-outline"></i>
         </button>
       </label>
 
       <label class="tab-bar__item">
         <input type="radio" name="tab-bar-b">
         <button class="tab-bar__button">
-          <i class="tab-bar__icon ion-ios7-pie"></i>
+          <i class="tab-bar__icon ion-ios-pie"></i>
         </button>
       </label>
     </div>
@@ -1864,6 +1864,9 @@ h6 {
   line-height: 19px;
   font-weight: 400;
 }
+.notification:empty {
+  display: none;
+}
 /* topdoc
   name: Toolbar Button
   class: toolbar-button
@@ -1916,7 +1919,8 @@ h6 {
   transition: none;
   opacity: 0.2;
 }
-.toolbar-button:disabled {
+.toolbar-button:disabled,
+.toolbar-button[disabled] {
   opacity: 0.3;
   cursor: default;
   pointer-events: none;
@@ -2105,8 +2109,8 @@ h6 {
   opacity: 0;
 }
 .checkbox > input[type="checkbox"]:focus + .checkbox__checkmark:before {
-  -webkit-box-shadow: var-box-shadow--cta;
-  box-shadow: var-box-shadow--cta;
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
 .checkbox > input[type="checkbox"]:disabled + .checkbox__checkmark {
   opacity: 0.3;
@@ -2275,8 +2279,8 @@ h6 {
 }
 .checkbox--noborder > input[type="checkbox"]:focus + .checkbox__checkmark:before {
   border: none;
-  -webkit-box-shadow: var-box-shadow--cta;
-  box-shadow: var-box-shadow--cta;
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
 .checkbox--noborder > input[type="checkbox"]:disabled + .checkbox__checkmark {
   opacity: 0.3;
@@ -2374,8 +2378,8 @@ h6 {
   height: 24px;
   background: transparent;
   border: none;
-  -webkit-border-radius: var-border-radius--checkbox;
-  border-radius: var-border-radius--checkbox;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
   left: 0;
 }
 .radio-button__checkmark {
@@ -2633,6 +2637,40 @@ h6 {
       </li>
     </ul>
  */
+/* topdoc
+  name: Tight List
+  class: list__item--tight
+  use: List
+  markup:
+    <ul class="list">
+      <li class="list__item list__item--tight">
+        Sed ut perspiciatis unde omnis iste laudantium, totam rem aperiam.
+      </li>
+       <li class="list__item list__item--tight">
+        Eaque ipsa quae ab illo inventore vitae dicta sunt explicabo.
+      </li>
+    </ul>
+ */
+.list__item--tight {
+  -webkit-transition: background-color 0.2s linear;
+  -moz-transition: background-color 0.2s linear;
+  -o-transition: background-color 0.2s linear;
+  transition: background-color 0.2s linear;
+  min-height: inherit;
+  line-height: inherit;
+}
+.list__item--tight:active {
+  -webkit-transition: none;
+  -moz-transition: none;
+  -o-transition: none;
+  transition: none;
+}
+.list__item--tight:hover {
+  -webkit-transition: none;
+  -moz-transition: none;
+  -o-transition: none;
+  transition: none;
+}
 /* topdoc
   name: Tappable List
   class: list__item--tappable
@@ -3035,7 +3073,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   color: #87888f;
 }
 .text-input:invalid {
-  border: 1px solid var-input-invalid-border-color;
+  border: 1px solid #424242;
   color: #fff;
 }
 /* topdoc
@@ -3103,7 +3141,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   background-color: transparent;
 }
 .text-input--transparent:invalid {
-  border: 1px solid var-input-invalid-border-color;
+  border: 1px solid #424242;
   color: #fff;
   border: none;
   background-color: transparent;
@@ -3175,11 +3213,11 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   background-color: transparent;
 }
 .text-input--underbar:invalid {
-  border: 1px solid var-input-invalid-border-color;
+  border: 1px solid #424242;
   color: #fff;
   border: none;
   background-color: transparent;
-  border-bottom: 1px solid var-input-invalid-border-color;
+  border-bottom: 1px solid #424242;
 }
 /* topdoc
   name: Textarea
@@ -3212,7 +3250,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   resize: none;
   outline: none;
   padding: 5px 5px 5px 5px;
-  font-size: var-font-size--text-input;
+  font-size: 15px;
   font-weight: 400;
   -webkit-border-radius: 4px;
   border-radius: 4px;
@@ -3267,7 +3305,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   padding: 5px 5px 5px 5px;
   padding-left: 0;
   padding-right: 0;
-  font-size: var-font-size--text-input;
+  font-size: 15px;
   font-weight: 400;
   -webkit-border-radius: 4px;
   border-radius: 4px;
@@ -3284,7 +3322,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   cursor: default;
   pointer-events: none;
 }
-.textarea--transpanret::-webkit-input-placeholder,
+.textarea--transparent::-webkit-input-placeholder,
 .textarea--transparent::-moz-placeholder,
 .textarea--transparent:-ms-input-placeholder {
   color: #87888f;
@@ -3735,6 +3773,7 @@ input[type="search"].search-input::-webkit-search-cancel-button {
   color: #fff;
   overflow: hidden;
   min-height: 100px;
+  height: 100%;
 }
 .popover__content > * {
   overflow: hidden;

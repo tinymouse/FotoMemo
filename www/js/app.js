@@ -19,10 +19,10 @@ function myEventHandler() {
     var str ;
 
     if( window.Cordova && dev.isDeviceReady.c_cordova_ready__ ) {
-            str = "It worked! Cordova device ready detected at " + dev.isDeviceReady.c_cordova_ready__ + " milliseconds!" ;
+        str = "It worked! Cordova device ready detected at " + dev.isDeviceReady.c_cordova_ready__ + " milliseconds!" ;
     }
     else if( window.intel && intel.xdk && dev.isDeviceReady.d_xdk_ready______ ) {
-            str = "It worked! Intel XDK device ready detected at " + dev.isDeviceReady.d_xdk_ready______ + " milliseconds!" ;
+        str = "It worked! Intel XDK device ready detected at " + dev.isDeviceReady.d_xdk_ready______ + " milliseconds!" ;
     }
     else {
         str = "Bad device ready, or none available because we're running in a browser." ;
@@ -49,6 +49,8 @@ ons.ready(function(){
             url: "./image/noimage.png",
             savedTime: new Date(),
             comment: "",
+            completed: false,
+            deleted: false
         },
         mutators: {
             savedTime: function(){
@@ -59,11 +61,19 @@ ons.ready(function(){
 
     app.EntryList = Backbone.Collection.extend({
         model: app.Entry,
-        localStorage: new Store('EntryList.FotoMemo')
+        localStorage: new Store('EntryList.FotoMemo'),
+        removeDeletedItems: function(){
+            $.each(this.where({deleted: true}),function(index, item){
+                item.destroy();
+            });
+        }
     });
-    app.entries = new app.EntryList();
     
     app.ListItemView = Marionette.ItemView.extend({
+        /*
+        model: null,
+        parent: null,
+        */
         template: '#entry-item-template',
         ui: {
             item: '.list-item'
@@ -75,19 +85,27 @@ ons.ready(function(){
             'change': 'onChange'
         },
         onChange: function(){
+            this.model.save();
             this.render();
             ons.compile(this.$el.get(0));
             this.parent.initMobiscroll();
         },
     });
     app.EntryListView = Marionette.CompositeView.extend({
-        el: '#list-page',
-        template: '#list-page',
+        /*
+        collection: null,
+        */
+        el: 'ons-page#list-page',        
+        template: 'ons-page#list-page',
         childViewContainer: '#entry-list',
         childView: app.ListItemView,
         onRender: function(){
-            ons.compile($(this.childViewContainer).get(0));
             this.initMobiscroll();
+            // ↓リストビューをスワイプしたときスライディングメニューが開かないように
+            $('#list-container').on('touchmove', function(e){
+                console.log("#list-container.touchmove");
+                e.stopPropagation();
+            });
         },
         onAddChild: function(childView){
             childView.parent = this;
@@ -102,7 +120,14 @@ ons.ready(function(){
                     icon: 'remove', 
                     confirm: true,
                     action: function(item, inst, index) {
-                        self.collection.get({cid: item.attr('cid')}).destroy();
+                        var selected = self.collection.get({cid: item.attr('cid')});
+                        selected.set({deleted: true});
+                        /*
+                        inst.remove(item);
+                        これで消せないので↓
+                        */
+                        var view = self.children.findByModel(selected);
+                        self.removeChildView(view);                        
                         return false;
                     }
                 }],
@@ -111,47 +136,63 @@ ons.ready(function(){
                     mainNavi.pushPage('detail-page');
                 }
             });
+            
         },
         events: {
             'click .js-camera': 'onCameraClick',
+            'click .js-menu': 'onMenuClick',
         },
         onCameraClick: function(e){
             navigator.camera.getPicture(
-                this.onPhoto
-            ,function(){
-                console.log("error");
-            },{
-                quality: 50,
-                destinationType: Camera.DestinationType.FILE_URI 
-            });
+                this.onCameraSuccess,
+                function(){
+                    console.log("camera.getPicture.error");
+                },{
+                    quality: 50,
+                    destinationType: Camera.DestinationType.FILE_URI 
+                });
         },
-        onPhoto: function(uri){
+        onCameraSuccess: function(uri){
             var entry = new app.Entry({
                 url: uri,
                 savedTime: new Date(),
             });
-            app.entries.create(entry);
             app.selected = entry;
+            app.entries.create(entry);
             mainNavi.pushPage('detail-page');
+        },
+        onMenuClick: function(){
+            mainMenu.toggleMenu();
+        },
+        filter: function(child, index, collection){
+            return child.get('deleted') === false;
+        },
+        collectionEvents: {
+            'change': function(){
+                    console.log("EntryListView.collection.chage");
+                }
         }
     });
-
+    
     app.EntryDetailView = Marionette.View.extend({
-        el: '#detail-page',
+        /*
+        model: null,
+        */
+        el: 'ons-page#detail-page',
         ui: {
             imageBox: '#imageBox',
             savedTime: '#savedTime'
         },
         bindings: {
-            '#comment': 'comment',
-            '#savedTime': 'savedTime',
             '#imageBox': {
                 observe: 'url',
                 update: function($el, val, model, options){
                     var template = _.template($el.get(0).outerHTML.replace('&lt;','<').replace('&gt;','>'));
                     $el.get(0).outerHTML = template({url: val});
                 }
-            }
+            },
+            '#savedTime': 'savedTime',
+            '#comment': 'comment'
         },
         render: function(){
             this.stickit();
@@ -172,26 +213,70 @@ ons.ready(function(){
             this.model.save();
         },
         events: {
-            'click #imageBox': 'onImageClick'
-        },
-        onImageClick: function(){
-            var buf = $('#imageBox').get(0).outerHTML;
-            alert(buf);
+            'click #imageBox': function(){
+                    var buf = $(this.ui.imageBox).get(0).outerHTML;
+                    alert(buf);
+                }
         }
     });
-    $(document).on('pageinit', '#detail-page', function(){
+    $(document).on('pageinit', 'ons-page#detail-page', function(){
         app.detailView = new app.EntryDetailView({
             model: app.selected
         });
         app.detailView.render();
     });
     
-    app.onStart = function(){
+    app.MenuView = Marionette.View.extend({
+        el: '#left-menu',
+        events: {
+            "click [name='folder']": 'onFolderClick',
+            'change #folderInbox': 'onFolderInboxClick',
+            'change #folderDeleted': 'onFolderDeletedClick',
+            'click #buttonDelete': 'onDeleteClick'
+        },
+        onFolderClick: function(){
+            mainMenu.closeMenu();
+        },
+        onFolderInboxClick: function(){
+            app.listView.filter = function(child, index, collection){
+                return child.get('deleted') === false;
+            };
+            app.listView.render();
+        },
+        onFolderDeletedClick: function(){
+            app.listView.filter = function(child, index, collection){
+                return child.get('deleted') === true;
+            };
+            app.listView.render();
+        },
+        onDeleteClick: function(){
+            console.log("onDelteClick");
+            app.entries.removeDeletedItems();
+            app.listView.render();
+        }
+    });
+    // ↓詳細ページを表示しているとき画面のスワイプでスライディングメニューが開かないように
+    $('ons-page#list-page').styleListener({
+        styles: ['display'],
+        changed: function(style, newValue, oldValue, element){
+            if (style === 'display' && oldValue === 'none'){
+                mainMenu.setSwipeable(true);
+            }
+            else if (style == 'display' && newValue === 'none'){
+                mainMenu.setSwipeable(false);
+            }
+        }
+    });
+    
+    app.onStart = function(){        
+        app.entries = new app.EntryList();
         app.entries.fetch();
         app.listView = new app.EntryListView({
             collection: app.entries
         });
+        app.listView.initMobiscroll();
         app.listView.render();
+        app.mainMenu = new app.MenuView();
     };
     app.start();
 });
