@@ -4,7 +4,7 @@
     "creationData": {
       "projectTypeName": "com.intel.xdk.projecttype.jsapp",
       "projectGuid": "cc918b95-7c2d-444b-9d41-f87454ee5367",
-      "lastModifiedDate": 1431825796152,
+      "lastModifiedDate": 1432475964749,
       "creationDate": 1431221636595
     },
     "XDK-app-designer": "false",
@@ -56,18 +56,18 @@
         },
         "isActive_": false,
         "appName_": "FotoMemo",
-        "appID_": "xdk.intel.blank.template",
+        "appID_": "fotomemo.tinymouse.jp",
         "appAccess_": [],
         "icons_": [],
         "splashes_": [],
-        "addlPermissions_": "",
+        "addlPermissions_": "android.permission.CAMERA",
         "excludedLibraries_": "",
         "iosProvs_": [],
         "cordovaCLIVersion_": "4.1.2",
         "crosswalkVersion_": "11",
         "appVersion_": "0.0.1",
-        "appDescription_": "Universal init code for Intel XDK and Cordova device ready detection.",
-        "appAuthor_": "Intel XDK",
+        "appDescription_": "Easy Memo App",
+        "appAuthor_": "Tiny Mouse",
         "appVersionCode_": "1"
       },
       "Android-Crosswalk": {

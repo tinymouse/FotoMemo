@@ -85,6 +85,9 @@
         ons-back-button i {
             color: white !important;
         }
+        ons-back-button span {
+            color: white !important;
+        }
         ons-toolbar-button {
             color: white !important;
         }
@@ -109,6 +112,17 @@
     </ons-template>
     
     <style>
+        .label {
+            display: inline;
+            font-size: small;
+            background-color: darkseagreen;
+            color: white;
+            padding: 3px;
+            border-radius: 3px;
+        }
+        .savedTime {
+            margin: 6px 0;
+        }
         .imageBox {
             background-position: center;
             background-repeat: no-repeat;
@@ -132,10 +146,18 @@
     <script>
         var dateFormat = 'yy/mm/dd HH:ii';
         var dateOption = {
+            display: 'bottom',
+            theme: 'mobiscroll',
             lang: 'en',
             dateOrder: 'yymmdd',
             dateFormat: 'yy/mm/dd',
-            timeFormat: 'HH:ii'
+            timeFormat: 'HH:ii',
+            timeWheels: 'HHii'
+        };
+        var labelOption = {
+            display: 'bottom',
+            theme: 'mobiscroll',
+            lang: 'en',
         };
     </script>
     
@@ -146,7 +168,18 @@
                     <div class="imageBox" style="background-image: url('<%= url %>')"></div>
                 </ons-col>
                 <ons-col align="center">
-                    <span calss="savedTime"><%= savedTime %></span>
+                    <div class="labels">
+                        <div class="label"><%= labelText %></div>
+                    </div>
+                    <div class="savedTime"><%= savedTime %></div>
+                    <div class="icon">
+                        <% if (deleted) { %>
+                            <ons-icon icon='fa-trash-o' size='20px'></ons-icon>
+                        <% } %>
+                        <% if (completed) { %>
+                            <ons-icon icon='fa-check-square' size='20px'></ons-icon>
+                        <% } %>
+                    </div>
                 </ons-col>
             </ons-row>
         </li>
@@ -166,7 +199,10 @@
                     <input class="text-input text-input--transparent" id="savedTime">
                 </ons-list-item>
                 <ons-list-item>
-                    <input class="text-input text-input--transparent" id="comment"> 
+                    <select class="text-input text-input--transparent" id="label"></select> 
+                </ons-list-item>
+                <ons-list-item>
+                    <input class="text-input text-input--transparent" id="comment" placeholder="Comment"> 
                 </ons-list-item>
             </ons-list>
         </ons-page>
@@ -179,10 +215,10 @@
         max-slide-distance="200px"
         swipeable="true"
         main-page="main-page"
-        menu-page="left-menu">
+        menu-page="main-menu">
     </ons-sliding-menu>
     
-    <ons-template id="left-menu">
+    <ons-template id="main-menu">
         <ons-toolbar>
             <div class="right">
                 <ons-toolbar-button class="js-close" onClick="mainMenu.close()">
@@ -190,20 +226,29 @@
                 </ons-toolbar-button>
             </div>
         </ons-toolbar>
-        <ons-list id="left-menu">
-            <ons-list-header>Folder</ons-list-header>
+        <ons-list id="main-menu">
+            <ons-list-header>Labels</ons-list-header>
             <ons-list-item modifier="tappable">
                 <label class="radio-button radio-button--list-item">
-                    <input type="radio" name="folder" id="folderInbox" checked="checked">
+                    <input type="radio" name="labels" id="labelNone" checked="checked">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                    Inbox
+                    None
                 </label>
             </ons-list-item>
+            <% _.each(labels, function(label){ %>
+                <ons-list-item modifier="tappable">
+                    <label class="radio-button radio-button--list-item">
+                        <input type="radio" name="labels" value="<%= label.value %>">
+                        <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
+                        <%= label.text %>
+                    </label>
+                </ons-list-item>
+            <% }); %> 
             <ons-list-item modifier="tappable">
                 <label class="radio-button radio-button--list-item">
-                    <input type="radio" name="folder" id="folderDeleted">
+                    <input type="radio" name="labels" id="labelAll">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                    Deleted
+                    All
                 </label>
             </ons-list-item>
             <ons-list-header>Action</ons-list-header>
@@ -213,6 +258,16 @@
         </ons-list>
     </ons-template>
 
+    <script type="text/template" id="label-item-template">
+        <ons-list-item modifier="tappable">
+            <label class="radio-button radio-button--list-item">
+                <input type="radio" name="labels" id="">
+                <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
+                <%= text %>
+            </label>
+        </ons-list-item>
+    </script> 
+                
 <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->
 <!-- Place your remote debugging (weinre) script URL from the Test tab here, if it does not work below -->
     <!-- <script src="http://debug-software.intel.com/target/target-script-min.js#insertabiglongfunkynumberfromthexdkstesttab"></script> -->
