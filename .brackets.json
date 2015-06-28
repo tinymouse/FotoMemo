@@ -4,6 +4,10 @@
         "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/www/lib/onsen/js/angular/angular.js",
         "jquery.js",
         "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/plugins/org.apache.cordova.device/www/device.js",
-        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/plugins/org.apache.cordova.splashscreen/src/tizen/SplashScreenProxy.js"
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/plugins/org.apache.cordova.splashscreen/src/tizen/SplashScreenProxy.js",
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/www/xdk/init-dev.js",
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/www/lib/mobiscroll/js/mobiscroll.custom-2.15.1.min.js",
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/plugins/org.apache.cordova.splashscreen/www/windows8/SplashScreenProxy.js",
+        "/Users/tinymouse/Documents/HTML5 Apps/FotoMemo/plugins/org.apache.cordova.splashscreen/src/blackberry10/index.js"
     ]
 }

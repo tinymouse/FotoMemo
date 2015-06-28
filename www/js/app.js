@@ -56,7 +56,7 @@ ons.ready(function(){
     });
     app.LabelList = Backbone.Collection.extend({
         model: app.Label,
-        localStorage: new Store('LabelList.FotoMemo')
+        localStorage: new Backbone.LocalStorage('LabelList.FotoMemo'),
     });
     
     app.Entry = Backbone.Model.extend({
@@ -81,10 +81,18 @@ ons.ready(function(){
                 else return this.attributes.label.id;
             }
         },
+        hasLabel: function(label){
+            if (this.attributes.label && label) {
+                return this.attributes.label.id == label.id;
+            }
+            else {
+                return false;
+            }
+        }
     });
     app.EntryList = Backbone.Collection.extend({
         model: app.Entry,
-        localStorage: new Store('EntryList.FotoMemo'),
+        localStorage: new Backbone.LocalStorage('EntryList.FotoMemo'),
         removeDeletedItems: function(){
             $.each(this.where({deleted: true}),function(index, item){
                 item.destroy();
@@ -99,7 +107,7 @@ ons.ready(function(){
         */
         template: '#entry-item-template',
         ui: {
-            item: '.list-item'
+            item: '.entry-list-item'
         },
         onRender: function(){
             this.ui.item.attr('cid', this.model.cid);
@@ -118,14 +126,27 @@ ons.ready(function(){
         /*
         collection: app.EntryList,
         */
-        el: '#list-container',        
-        template: '#list-container',
+        el: '#entry-list-container',        
+        template: '#entry-list-container',
         childViewContainer: '#entry-list',
         childView: app.ListItemView,
+        onBeforeRender: function(){
+            if (app.currentLabel) {
+                this.filter = function(child, index, collection){
+                    return (!child.deleted)
+                        && child.hasLabel(app.currentLabel);
+                };
+            }
+            else {
+                this.filter = function(child, index, collection){
+                    return (!child.deleted) 
+                };
+            }
+        },
         onRender: function(){
             this.initMobiscroll();
             // ↓リストビューをスワイプしたときスライディングメニューが開かないように
-            $('#list-container').on('touchmove', function(e){
+            this.$el.on('touchmove', function(e){
                 e.stopPropagation();
             });
         },
@@ -166,13 +187,12 @@ ons.ready(function(){
                 }],
                 onItemTap: function(item, index, event, inst){
                     app.selected = self.collection.get({cid: item.attr('cid')});
-                    mainNavi.pushPage('detail-page');
+                    mainNavi.pushPage('entry-detail-page');
                 }
             });
-            
         },
         filter: function(child, index, collection){
-            return child.get('deleted') === false && child.get('completed') === false;
+            return child.get('deleted') == false && child.get('completed') == false;
         },
         collectionEvents: {
             'change': function(){
@@ -185,7 +205,7 @@ ons.ready(function(){
         /*
         model: app.Entry,
         */
-        el: 'ons-page#detail-page',
+        el: 'ons-page#entry-detail-page',
         ui: {
             imageBox: '#imageBox',
             savedTime: '#savedTime',
@@ -203,13 +223,9 @@ ons.ready(function(){
             '#label': {
                 observe: 'label',
                 update: function($el, val, model, options){
-                    console.log("#label.update");
-                    console.log(val);
                     $el.mobiscroll('setVal', val.value, true, false, false, 0);
                 },
                 getVal: function($el, event, options){
-                    console.log("#label.getVal");
-                    console.log($el.mobiscroll('getVal', false, false));
                     return app.labels.get({id: $el.mobiscroll('getVal', false, false)});
                 }
             },
@@ -218,7 +234,6 @@ ons.ready(function(){
         initialize: function(){
             $(this.ui.savedTime).mobiscroll().datetime($.extend({
             },dateOption));
-            console.log(app.labels.toJSON());
             $(this.ui.label).mobiscroll().select($.extend({
                 data: app.labels.toJSON()
             },labelOption));
@@ -237,15 +252,15 @@ ons.ready(function(){
                 }
         },
     });
-    $(document).on('pageinit', 'ons-page#detail-page', function(){
-        app.detailView = new app.EntryDetailView({
+    $(document).on('pageinit', 'ons-page#entry-detail-page', function(){
+        app.entryDetailView = new app.EntryDetailView({
             model: app.selected
         });
-        app.detailView.render();
+        app.entryDetailView.render();
     });
     
     app.MainView = Marionette.View.extend({
-        el: 'ons-page#list-page',        
+        el: 'ons-page#entry-list-page',        
         events: {
             'click .js-camera': 'onCameraClick',
             'click .js-menu': 'onMenuClick',
@@ -264,10 +279,12 @@ ons.ready(function(){
             var entry = new app.Entry({
                 url: uri,
                 savedTime: new Date(),
+                label: app.currentLabel
             });
-            app.selected = entry;
+            console.log(entry);
             app.entries.create(entry);
-            mainNavi.pushPage('detail-page');
+            app.selected = entry;
+            mainNavi.pushPage('entry-detail-page');
         },
         onMenuClick: function(){
             mainMenu.toggleMenu();
@@ -276,11 +293,24 @@ ons.ready(function(){
     
     app.MenuView = Marionette.View.extend({
         el: '#main-menu',
+        initialize: function(){
+            this.template = this.$el.html();
+        },
         render: function(){
-            var template = _.template(this.$el.html().replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
+            var template = _.template(this.template.replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
             this.$el.html(template({
                 labels: app.labels.toJSON()
             }));
+            if (!app.currentLabel) {
+                $('#labelAll').attr('checked','checked');
+            }
+            else if (app.currentLabel == '') {
+                $('#labelNone').attr('checked','checked');
+            }
+            else {
+                console.log(app.currentLabel.get('id'));
+                $("input[name='labels']").val([app.currentLabel.get('id')]);
+            }
             return this;
         },
         events: {
@@ -288,72 +318,186 @@ ons.ready(function(){
             "change [name='labels']": 'onLabelChange',
             'change #labelNone': 'onLabelNoneClick',
             'change #labelAll': 'onLabelAllClick',
+            'click #buttonLabelSetting': 'onLabelSettingClick',
             'click #buttonDelete': 'onDeleteClick'
         },
         onLabelClick: function(e){
             mainMenu.closeMenu();
         },
         onLabelChange: function(e){
-            app.currentLabel = e.target.value;
-            console.log(app.currentLabel);
-            app.listView.filter = function(child, index, collection){
-                return child.get('deleted') === false 
-                    && child.get('labelId') === app.currentLabel;
-            };
-            app.listView.render();
+            app.currentLabel = app.labels.get({id: e.target.value});
+            app.entryListView.render();
         },
         onLabelNoneClick: function(){
-            app.listView.filter = function(child, index, collection){
-                return child.get('deleted') === false 
-                    && child.get('label') === null;
-            };
-            app.listView.render();
+            app.currentLabel = "";
+            app.entryListView.render();
         },
         onLabelAllClick: function(){
-            app.listView.filter = function(child, index, collection){
-                return child.get('deleted') === false;
-            };
-            app.listView.render();
+            app.currentLabel = null;
+            app.entryListView.render();
+        },
+        onLabelSettingClick: function(){
+            mainMenu.closeMenu();
+            mainNavi.pushPage('label-list-page');
         },
         onDeleteClick: function(){
-            console.log("onDeleteClick");
-            
             app.entries.removeDeletedItems();
-            app.listView.render();
-        }
+            app.entryListView.render();
+        },
+    });
+    mainMenu.on('preopen', function(){
+        console.log("mainMenu.preopen");
+        app.mainMenu.render();        
     });
     // ↓詳細ページを表示しているとき画面のスワイプでスライディングメニューが開かないように
-    $('ons-page#list-page').styleListener({
+    $('ons-page#entry-list-page').styleListener({
         styles: ['display'],
         changed: function(style, newValue, oldValue, element){
-            if (style === 'display' && oldValue === 'none'){
+            if (style == 'display' && oldValue == 'none'){
                 mainMenu.setSwipeable(true);
             }
-            else if (style == 'display' && newValue === 'none'){
+            else if (style == 'display' && newValue == 'none'){
                 mainMenu.setSwipeable(false);
             }
         }
     });
     
-    app.onStart = function(){        
-        app.labels = new app.LabelList();
+    app.LabelItemView = Marionette.ItemView.extend({
+        /*
+        model: app.Label,
+        parent: app.LabelListView,
+        */
+        template: '#label-item-template',
+        ui: {
+            item: '.label-list-item'
+        },
+        onRender: function(){
+            this.ui.item.attr('cid', this.model.cid);
+        },
+        modelEvents: {
+            'change': 'onChange'
+        },
+        onChange: function(){
+            this.model.save();
+            this.render();
+            ons.compile(this.$el.get(0));
+            this.parent.initMobiscroll();
+        },
+    });
+    app.LabelListView = Marionette.CompositeView.extend({
+        /*
+        collection: app.LabelList,
+        */
+        el: '#label-list-container',        
+        template: '#label-list-container',
+        childViewContainer: 'div#label-list',
+        childView: app.LabelItemView,
+        listContainer: 'ul#label-list',
+        onRender: function(){
+            this.initMobiscroll();
+            // ↓リストビューをスワイプしたときスライディングメニューが開かないように
+            this.$el.on('touchmove', function(e){
+                e.stopPropagation();
+            });
+        },
+        onAddChild: function(childView){
+            childView.parent = this;
+        },
+        initMobiscroll: function(){
+            var self = this;
+            $(this.listContainer).mobiscroll().listview({
+                theme: 'mobiscroll',
+                swipe: false,
+                onItemTap: function(item, index, event, inst){
+                    if (!item.hasClass('label-list-item')){
+                        return false;
+                    }
+                    console.log("onItemTap");
+                    app.selected = self.collection.get({cid: item.attr('cid')});
+                    mainNavi.pushPage('label-detail-page');
+                }
+            });
+        },
+        events: {
+            'click #add-label': 'onAddClick',
+        },
+        onAddClick: function(e){
+            console.log("onAddClick");
+            var label = new app.Label({
+                text: "Label"
+            });
+            app.labels.create(label);
+            app.selected = label;
+            mainNavi.pushPage('label-detail-page');
+        },
+    });
+    $(document).on('pageinit', 'ons-page#label-list-page', function(){
+        app.labelListView = new app.LabelListView({
+            collection: app.labels
+        });
+        app.labelListView.render();
+    });
+    
+    app.LabelDetailView = Marionette.View.extend({
+        /*
+        model: app.Label,
+        */
+        el: 'ons-page#label-detail-page',
+        ui: {
+            text: '#text'
+        },
+        bindings: {
+            '#text': 'text'
+        },
+        initialize: function(){
+            this.stickit();
+        },
+        modelEvents: {
+            'change': 'onChange'
+        },
+        onChange: function(){
+            this.model.save();
+        },
+        events: {
+            'click #del-label': 'onDelClick'
+        },
+        onDelClick: function(){
 /*
-        app.labels.fetch();
+            ons.notification.confirm({
+                message: 'Are you sure?'
+                callback: function(index) {
+                    // Do something here.
+                }
+            });
 */
-            app.labels.create(new app.Label({text: "ラベル1"}));
-            app.labels.create(new app.Label({text: "ラベル2"}));
-            app.labels.create(new app.Label({text: "ラベル3"}));
+            this.model.destroy();
+            mainNavi.popPage();
+        }
+    });
+    $(document).on('pageinit', 'ons-page#label-detail-page', function(){
+        app.labelDetailView = new app.LabelDetailView({
+            model: app.selected
+        });
+        app.labelDetailView.render();
+    });
+    
+    app.onStart = function(){        
+        app.labels = new app.LabelList({
+        });
+        app.labels.fetch();
+        
+        app.currentLabel = app.labels.at(0);
 
         app.entries = new app.EntryList();
         app.entries.fetch();
         
-        app.listView = new app.EntryListView({
+        app.entryListView = new app.EntryListView({
             collection: app.entries
         });
-        app.listView.render();
+        app.entryListView.render();
+
         app.mainView = new app.MainView();
         app.mainMenu = new app.MenuView();
-        app.mainMenu.render();
     };
     app.start();
 });

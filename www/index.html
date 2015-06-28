@@ -71,7 +71,7 @@
     <ons-template id="main-page">
         <ons-navigator 
             var="mainNavi"
-            page="list-page"> 
+            page="entry-list-page"> 
         </ons-navigator>
     </ons-template>
     
@@ -93,8 +93,8 @@
         }
     </style>
         
-    <ons-template id="list-page">
-        <ons-page id="list-page">
+    <ons-template id="entry-list-page">
+        <ons-page id="entry-list-page">
             <ons-toolbar>
                 <div class="left">
                     <ons-toolbar-button class="js-menu"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button>
@@ -104,7 +104,7 @@
                     <ons-toolbar-button class="js-camera"><ons-icon icon="fa-camera"></ons-icon></ons-toolbar-button>
                 </div>
             </ons-toolbar>
-            <div id="list-container">
+            <div id="entry-list-container">
                 <ul id="entry-list">
                 </ul>
             </div>
@@ -133,12 +133,12 @@
             height: 100px;
             width: 100px;
         }
-        #detail-list .imageBox {
+        #entry-detail-list .imageBox {
             height: 200px;
             width: 200px;
             margin: 20px 0px;
         }
-        #detail-list {
+        #entry-detail-list {
             margin: 10px;
         }
     </style>
@@ -162,7 +162,7 @@
     </script>
     
     <script type="text/template" id="entry-item-template">
-        <li class="list-item">
+        <li class="entry-list-item">
             <ons-row>
                 <ons-col>
                     <div class="imageBox" style="background-image: url('<%= url %>')"></div>
@@ -185,13 +185,13 @@
         </li>
     </script> 
 
-    <ons-template id="detail-page">
-        <ons-page id="detail-page">
+    <ons-template id="entry-detail-page">
+        <ons-page id="entry-detail-page">
             <ons-toolbar>
-                <div class="left"><ons-back-button>Back</ons-back-button></div>
+                <div class="left"><ons-back-button></ons-back-button></div>
                 <div class="center">Detail</div>
             </ons-toolbar>
-            <ons-list id="detail-list" modifier="inset">
+            <ons-list id="entry-detail-list" modifier="inset">
                 <ons-list-item>
                     <div class="imageBox" id="imageBox" style="background-image: url('<%= url %>')"></div>
                 </ons-list-item>
@@ -227,10 +227,12 @@
             </div>
         </ons-toolbar>
         <ons-list id="main-menu">
-            <ons-list-header>Labels</ons-list-header>
+            <ons-list-header>
+                Labels
+            </ons-list-header>
             <ons-list-item modifier="tappable">
                 <label class="radio-button radio-button--list-item">
-                    <input type="radio" name="labels" id="labelNone" checked="checked">
+                    <input type="radio" name="labels" id="labelNone">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
                     None
                 </label>
@@ -251,22 +253,72 @@
                     All
                 </label>
             </ons-list-item>
-            <ons-list-header>Action</ons-list-header>
+            <ons-list-item modifier="tappable" id="buttonLabelSetting">
+                <ons-icon icon="fa-gear"></ons-icon>Setting
+            </ons-list-item>
+            <ons-list-header>
+                Action
+            </ons-list-header>
             <ons-list-item modifier="tappable" id="buttonDelete">
-                Delete completely
+                Clear
             </ons-list-item>
         </ons-list>
     </ons-template>
 
+    <style>
+        ons-list-item ons-icon, li ons-icon {
+            color: blue;
+            margin: 5px;
+        }
+        #label-detail-list {
+            margin: 10px;
+        }
+    </style>
+
+    <ons-template id="label-list-page">
+        <ons-page id="label-list-page">
+            <ons-toolbar>
+                <div class="left">
+                    <ons-back-button></ons-back-button>
+                </div>
+                <div class="center">Labels</div>
+            </ons-toolbar>
+            <div id="label-list-container">
+                <ul id="label-list">
+                    <div id="label-list">
+                    </div>
+                    <li id="add-label">
+                        <ons-icon icon="fa-plus"></ons-icon>Add Label
+                    </li>
+                </ul>
+            </div>
+        </ons-page>
+    </ons-template>
+
     <script type="text/template" id="label-item-template">
-        <ons-list-item modifier="tappable">
-            <label class="radio-button radio-button--list-item">
-                <input type="radio" name="labels" id="">
-                <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                <%= text %>
-            </label>
-        </ons-list-item>
+        <li class="label-list-item">
+            <%= text %>
+        </li>
     </script> 
+
+    <ons-template id="label-detail-page">
+        <ons-page id="label-detail-page">
+            <ons-toolbar>
+                <div class="left"><ons-back-button></ons-back-button></div>
+                <div class="center">Label</div>
+            </ons-toolbar>
+            <ons-list id="label-detail-list" modifier="inset">
+                <ons-list-item>
+                    <input class="text-input text-input--transparent" id="text" placeholder="Text"> 
+                </ons-list-item>
+            </ons-list>
+            <ons-list modifier="inset">
+                <ons-button id="del-label" modifier="large">
+                    <ons-icon icon="fa-trash"></ons-icon>Delete Label
+                </ons-button>
+            </ons-list>
+        </ons-page>
+    </ons-template>    
                 
 <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->
 <!-- Place your remote debugging (weinre) script URL from the Test tab here, if it does not work below -->
