@@ -159,6 +159,9 @@
             theme: 'mobiscroll',
             lang: 'en',
         };
+        var emptyLabelOption = {
+            text: "(None)",
+        };
     </script>
     
     <script type="text/template" id="entry-item-template">
@@ -234,13 +237,13 @@
                 <label class="radio-button radio-button--list-item">
                     <input type="radio" name="labels" id="labelNone">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                    None
+                    No label
                 </label>
             </ons-list-item>
             <% _.each(labels, function(label){ %>
                 <ons-list-item modifier="tappable">
                     <label class="radio-button radio-button--list-item">
-                        <input type="radio" name="labels" value="<%= label.value %>">
+                        <input type="radio" name="labels" value="<%= label.cid %>">
                         <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
                         <%= label.text %>
                     </label>
@@ -250,7 +253,7 @@
                 <label class="radio-button radio-button--list-item">
                     <input type="radio" name="labels" id="labelAll">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                    All
+                    All labels
                 </label>
             </ons-list-item>
             <ons-list-item modifier="tappable" id="buttonLabelSetting">
@@ -319,6 +322,22 @@
             </ons-list>
         </ons-page>
     </ons-template>    
+
+    <ons-template id="confirm-delete-label-dialog">
+        <ons-alert-dialog var="dialogConfirmToDeleteLabel" 
+            cancelable>
+            <div class="alert-dialog-title">
+                <strong>Confirm</strong>
+            </div>
+            <div class="alert-dialog-content">
+                Are you sure to delete this label ?
+            </div>
+            <div class="alert-dialog-footer">
+                <ons-button class="js-close js-no">No</ons-button>
+                <ons-button class="js-close js-yes">Yes</ons-button>
+            </div>
+        </ons-alert-dialog>
+    </ons-template>
                 
 <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->
 <!-- Place your remote debugging (weinre) script URL from the Test tab here, if it does not work below -->
