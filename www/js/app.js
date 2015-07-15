@@ -49,9 +49,6 @@ ons.ready(function(){
             text: "",
         },
         mutators: {
-            cid: function(){
-                return this.cid;
-            },
             value: function(){
                 return this.id;
             }
@@ -64,6 +61,7 @@ ons.ready(function(){
     app.labels = new app.LabelList();
     
     app.emptyLabel = new app.Label($.extend({
+        id: "99999999-9999-9999-9999-999999999999"
     },emptyLabelOption));
     
     app.currentLabel = null;
@@ -86,7 +84,7 @@ ons.ready(function(){
                     return this.attributes.label.text;
                 }
                 else {
-                    return "(None)";
+                    return app.emptyLabel.text;
                 }
             },
         },
@@ -94,7 +92,7 @@ ons.ready(function(){
             if (this.attributes.label && label) {
                 return this.attributes.label.id == label.id;
             }
-            else if (!this.attributes.label && label === '') {
+            else if (!this.attributes.label && !label) {
                 return true;
             }
             else {
@@ -102,7 +100,10 @@ ons.ready(function(){
             }
         },
         refreshLabel: function(label){
-            if (this.get('label').id == label.get('id')) {
+            if (!this.attributes.label || !label) {
+                return;
+            }
+            if (this.attributes.label.id == label.id) {
                 this.set('label', label.clone());
                 this.save();
             }
@@ -135,7 +136,9 @@ ons.ready(function(){
             'change': 'onChange'
         },
         onChange: function(){
+/*
             this.model.save();
+*/
             this.render();
             ons.compile(this.$el.get(0));
             this.parent.initMobiscroll();
@@ -287,6 +290,11 @@ ons.ready(function(){
         });
         app.entryDetailView.render();
     });
+    $(document).on('prepop', 'ons-page#entry-detail-page', function(){
+        if (app.entryDetailView){
+            app.entryDetailView.destroy();
+        }
+    });
     
     app.MainView = Marionette.View.extend({
         el: 'ons-page#entry-list-page',        
@@ -337,7 +345,7 @@ ons.ready(function(){
                 $('#labelAll').attr('checked','checked');
             }
             else {
-                $("input[name='labels']").val([app.currentLabel.cid]);
+                $("input[name='labels']").val([app.currentLabel.id]);
             }
             return this;
         },
@@ -361,7 +369,8 @@ ons.ready(function(){
             app.entryListView.render();
         },
         onLabelChange: function(e){
-            app.currentLabel = app.labels.get({cid: e.target.value}); 
+            app.currentLabel = app.labels.get({id: e.target.value}); 
+            console.log(e.target.value);
             app.entryListView.render();
         },
         onLabelSettingClick: function(){
@@ -406,7 +415,6 @@ ons.ready(function(){
             'change': 'onChange'
         },
         onChange: function(){
-            this.model.save();
             this.render();
             ons.compile(this.$el.get(0));
             this.parent.initMobiscroll();
@@ -458,10 +466,18 @@ ons.ready(function(){
         },
     });
     $(document).on('pageinit', 'ons-page#label-list-page', function(){
+        if (app.labelListView) {
+            app.labelListView.destroy();
+        }
         app.labelListView = new app.LabelListView({
             collection: app.labels
         });
         app.labelListView.render();
+    });
+    $(document).on('prepop', 'ons-page#label-list-page', function(){
+        if (app.labelListlView){
+            app.labelListView.destroy();
+        }
     });
     
     app.LabelDetailView = Marionette.View.extend({
@@ -496,7 +512,7 @@ ons.ready(function(){
             ons.createAlertDialog('confirm-delete-label-dialog').then(function(dialog) {
                 dialog.on('postshow', function(e) {
                     $('.js-yes').click(function(){
-                        self.delete();
+                        self.doDelete();
                     });
                     $('.js-close').click(function(){
                         e.alertDialog.destroy();
@@ -505,7 +521,7 @@ ons.ready(function(){
                 dialog.show();
             });
         },
-        delete: function(){
+        doDelete: function(){
             this.model.destroy();
             mainNavi.popPage();
         }
@@ -515,6 +531,15 @@ ons.ready(function(){
             model: app.selected
         });
         app.labelDetailView.render();
+    });
+    $(document).on('prepop', 'ons-page#label-detail-page', function(){
+        if (app.labelDetailView){
+            app.labelDetailView.destroy();
+        }
+    });
+
+    mainNavi.on('prepop', function(e){
+        $('ons-page#' + e.currentPage.name).trigger('prepop');
     });
     
     app.onStart = function(){        
