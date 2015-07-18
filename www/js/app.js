@@ -63,7 +63,7 @@ ons.ready(function(){
     app.emptyLabel = new app.Label($.extend({
         id: "99999999-9999-9999-9999-999999999999"
     },emptyLabelOption));
-    
+        
     app.currentLabel = null;
 
     app.Entry = Backbone.Model.extend({
@@ -80,24 +80,12 @@ ons.ready(function(){
                 return $.mobiscroll.formatDate(dateFormat, new Date(this.attributes.savedTime));
             },
             labelText: function(){
-                if (this.attributes.label) {
-                    return this.attributes.label.text;
-                }
-                else {
-                    return app.emptyLabel.text;
-                }
+                return (this.attributes.label ? this.attributes.label.text : app.emptyLabel.attributes.text);
             },
         },
         hasLabel: function(label){
-            if (this.attributes.label && label) {
-                return this.attributes.label.id == label.id;
-            }
-            else if (!this.attributes.label && !label) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return (this.attributes.label ? this.attributes.label.id : app.emptyLabel.id) == 
+                (label ? label.id : app.emptyLabel.id);
         },
         refreshLabel: function(label){
             if (!this.attributes.label || !label) {
@@ -136,9 +124,6 @@ ons.ready(function(){
             'change': 'onChange'
         },
         onChange: function(){
-/*
-            this.model.save();
-*/
             this.render();
             ons.compile(this.$el.get(0));
             this.parent.initMobiscroll();
@@ -155,15 +140,15 @@ ons.ready(function(){
         onBeforeRender: function(){
             if (!app.currentLabel) {
                 this.filter = function(child, index, collection){
-                    return !child.attributes.deleted 
-                        && !child.attributes.completed;
+                    return !child.attributes.deleted && 
+                        !child.attributes.completed;
                 };
             }
             else {
                 this.filter = function(child, index, collection){
-                    return !child.attributes.deleted
-                        && !child.attributes.completed
-                        && child.hasLabel(app.currentLabel);
+                    return !child.attributes.deleted &&
+                        !child.attributes.completed &&
+                        child.hasLabel(app.currentLabel);
                 };
             }
         },
@@ -255,7 +240,7 @@ ons.ready(function(){
             '#label': {
                 observe: 'label',
                 update: function($el, val, model, options){
-                    $el.mobiscroll('setVal', val.value, true, false, false, 0);
+                    $el.mobiscroll('setVal', (val.value ? val.value : app.emptyLabel.id), true, false, false, 0);
                 },
                 getVal: function($el, event, options){
                     return app.labels.get({id: $el.mobiscroll('getVal', false, false)});
@@ -265,6 +250,7 @@ ons.ready(function(){
         },
         initialize: function(){
             $(this.ui.savedTime).mobiscroll().datetime($.extend({
+                
             },dateOption));
             $(this.ui.label).mobiscroll().select($.extend({
                 data: app.labels.toJSON()
@@ -317,9 +303,7 @@ ons.ready(function(){
                 url: uri,
                 savedTime: new Date(),
             });
-            if (app.currentLabel) {
-                entry.set('label', app.currentLabel.clone());
-            }
+            entry.set('label', app.currentLabel ? app.currentLabel.clone() : app.emptyLabel.clone());
             app.entries.create(entry);
             app.selected = entry;
             mainNavi.pushPage('entry-detail-page');
@@ -340,7 +324,7 @@ ons.ready(function(){
             this.$el.html(template({
                 labels: app.labels.toJSON()
             }));
-            $('#labelNone').attr('value',app.emptyLabel.cid);
+            $('#labelNone').attr('value',app.emptyLabel.id);
             if (!app.currentLabel) {
                 $('#labelAll').attr('checked','checked');
             }
@@ -370,7 +354,6 @@ ons.ready(function(){
         },
         onLabelChange: function(e){
             app.currentLabel = app.labels.get({id: e.target.value}); 
-            console.log(e.target.value);
             app.entryListView.render();
         },
         onLabelSettingClick: function(){
@@ -445,20 +428,19 @@ ons.ready(function(){
                 theme: 'mobiscroll',
                 swipe: false,
                 onItemTap: function(item, index, event, inst){
-                    if (!item.hasClass('label-list-item')){
-                        return false;
+                    if (item.hasClass('label-list-item')){
+                        app.selected = self.collection.get({cid: item.attr('cid')});
+                        mainNavi.pushPage('label-detail-page');
                     }
-                    app.selected = self.collection.get({cid: item.attr('cid')});
-                    mainNavi.pushPage('label-detail-page');
+                    else if (item.hasClass('add-label')){
+                        self.onAddClick(event);
+                    }
                 }
             });
         },
-        events: {
-            'click #add-label': 'onAddClick',
-        },
         onAddClick: function(e){
             var label = new app.Label({
-                text: "Label"
+                text: "Label "
             });
             app.labels.create(label);
             app.selected = label;
@@ -466,9 +448,6 @@ ons.ready(function(){
         },
     });
     $(document).on('pageinit', 'ons-page#label-list-page', function(){
-        if (app.labelListView) {
-            app.labelListView.destroy();
-        }
         app.labelListView = new app.LabelListView({
             collection: app.labels
         });
@@ -544,7 +523,7 @@ ons.ready(function(){
     
     app.onStart = function(){        
         app.labels.fetch();
-        app.currentLabel = app.labels.at(0);
+        app.currentLabel = app.emptyLabel;
         app.entries.fetch();
         app.entryListView.render();
     };
