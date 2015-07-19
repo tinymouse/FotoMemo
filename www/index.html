@@ -160,7 +160,7 @@
             lang: 'en',
         };
         var emptyLabelOption = {
-            text: "No label",
+            name: "No label",
         };
     </script>
     
@@ -172,7 +172,7 @@
                 </ons-col>
                 <ons-col align="center">
                     <div class="labels">
-                        <div class="label"><%= labelText %></div>
+                        <div class="label"><%= labelName %></div>
                     </div>
                     <div class="savedTime"><%= savedTime %></div>
                     <div class="icon">
@@ -235,7 +235,7 @@
             </ons-list-header>
             <ons-list-item modifier="tappable">
                 <label class="radio-button radio-button--list-item">
-                    <input type="radio" name="labels" id="labelNone">
+                    <input type="radio" name="labels" class="js-close" id="labelNone">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
                     No label
                 </label>
@@ -243,34 +243,43 @@
             <% _.each(labels, function(label){ %>
                 <ons-list-item modifier="tappable">
                     <label class="radio-button radio-button--list-item">
-                        <input type="radio" name="labels" value="<%= label.id %>">
+                        <input type="radio" name="labels" class="js-close" value="<%= label.id %>">
                         <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
-                        <%= label.text %>
+                        <%= label.name %>
                     </label>
                 </ons-list-item>
             <% }); %> 
             <ons-list-item modifier="tappable">
                 <label class="radio-button radio-button--list-item">
-                    <input type="radio" name="labels" id="labelAll">
+                    <input type="radio" name="labels" class="js-close" id="labelAll">
                     <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
                     All labels
                 </label>
             </ons-list-item>
-            <ons-list-item modifier="tappable" id="buttonLabelSetting">
-                <ons-icon icon="fa-gear"></ons-icon>Setting
+            <ons-list-item modifier="tappable" class="js-close" id="configLabel">
+                <ons-icon icon="fa-gear"></ons-icon>Config
             </ons-list-item>
+            <ons-list-item modifier="tappable">
+                <label class="checkbox checkbox--noborder checkbox--list-item">
+                    <input type="checkbox" class="js-close" id="showCompleted">
+                    <div class="checkbox__checkmark checkbox--noborder__checkmark checkbox--list-item__checkmark"></div>
+                    Show Completed
+                </label>
+            </ons-list-item>
+<!--
             <ons-list-header>
                 Action
             </ons-list-header>
-            <ons-list-item modifier="tappable" id="buttonDelete">
+            <ons-list-item modifier="tappable" class="js-close" id="delete">
                 Clear
             </ons-list-item>
+-->
         </ons-list>
     </ons-template>
 
     <style>
         ons-list-item ons-icon, li ons-icon {
-            color: blue;
+            color: slategray;
             margin: 5px;
         }
         #label-detail-list {
@@ -290,7 +299,7 @@
                 <ul id="label-list">
                     <div id="label-list">
                     </div>
-                    <li class="add-label">
+                    <li class="js-add">
                         <ons-icon icon="fa-plus"></ons-icon>Add Label
                     </li>
                 </ul>
@@ -300,7 +309,7 @@
 
     <script type="text/template" id="label-item-template">
         <li class="label-list-item">
-            <%= text %>
+            <%= name %>
         </li>
     </script> 
 
@@ -312,11 +321,11 @@
             </ons-toolbar>
             <ons-list id="label-detail-list" modifier="inset">
                 <ons-list-item>
-                    <input class="text-input text-input--transparent" id="text" placeholder="Text"> 
+                    <input class="text-input text-input--transparent" id="name" placeholder="Name"> 
                 </ons-list-item>
             </ons-list>
             <ons-list modifier="inset">
-                <ons-button id="del-label" modifier="large">
+                <ons-button class="js-del" modifier="large">
                     <ons-icon icon="fa-trash"></ons-icon>Delete Label
                 </ons-button>
             </ons-list>

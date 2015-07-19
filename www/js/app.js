@@ -46,7 +46,7 @@ ons.ready(function(){
     
     app.Label = Backbone.Model.extend({
         defauls: {
-            text: "",
+            name: "",
         },
         mutators: {
             value: function(){
@@ -79,8 +79,8 @@ ons.ready(function(){
             savedTime: function(){
                 return $.mobiscroll.formatDate(dateFormat, new Date(this.attributes.savedTime));
             },
-            labelText: function(){
-                return (this.attributes.label ? this.attributes.label.text : app.emptyLabel.attributes.text);
+            labelName: function(){
+                return (this.attributes.label ? this.attributes.label.name : app.emptyLabel.attributes.name);
             },
         },
         hasLabel: function(label){
@@ -107,6 +107,8 @@ ons.ready(function(){
         }
     });
     app.entries = new app.EntryList();
+    
+    app.showCompleted = false;
     
     app.ListItemView = Marionette.ItemView.extend({
         /*
@@ -138,19 +140,11 @@ ons.ready(function(){
         childViewContainer: '#entry-list',
         childView: app.ListItemView,
         onBeforeRender: function(){
-            if (!app.currentLabel) {
-                this.filter = function(child, index, collection){
-                    return !child.attributes.deleted && 
-                        !child.attributes.completed;
-                };
-            }
-            else {
-                this.filter = function(child, index, collection){
-                    return !child.attributes.deleted &&
-                        !child.attributes.completed &&
-                        child.hasLabel(app.currentLabel);
-                };
-            }
+            this.filter = function(child, index, collection){
+                return !child.attributes.deleted &&
+                    (app.showCompleted ? true : !child.attributes.completed) &&
+                    (app.currentLabel ? child.hasLabel(app.currentLabel) : true);
+            };
         },
         onRender: function(){
             this.initMobiscroll();
@@ -253,7 +247,8 @@ ons.ready(function(){
                 
             },dateOption));
             $(this.ui.label).mobiscroll().select($.extend({
-                data: app.labels.toJSON()
+                data: app.labels.toJSON(),
+                placeholder: app.emptyLabel.attributes.name
             },labelOption));
             this.stickit();
         },
@@ -325,23 +320,25 @@ ons.ready(function(){
                 labels: app.labels.toJSON()
             }));
             $('#labelNone').attr('value',app.emptyLabel.id);
-            if (!app.currentLabel) {
-                $('#labelAll').attr('checked','checked');
-            }
-            else {
+            if (app.currentLabel) {
                 $("input[name='labels']").val([app.currentLabel.id]);
             }
+            else {
+                $('#labelAll').attr('checked','checked');
+            }
+            $('#showCompleted').prop('checked', app.showCompleted);
             return this;
         },
         events: {
-            "click [name='labels']": 'onLabelClick',
+            "click .js-close": 'onCloseClick',
             'change #labelAll': 'onLabelAllClick',
             'change #labelNone': 'onLabelNoneClick',
             "change [name='labels']:not(#labelNone,#labelAll)": 'onLabelChange',
-            'click #buttonLabelSetting': 'onLabelSettingClick',
-            'click #buttonDelete': 'onDeleteClick'
+            'click #showCompleted': 'onShowCompletedClick',
+            'click #configLabel': 'onConfigLabelClick',
+            'click #removeDeleted': 'onRemoveDeletedClick',
         },
-        onLabelClick: function(e){
+        onCloseClick: function(e){
             mainMenu.closeMenu();
         },
         onLabelAllClick: function(){
@@ -356,8 +353,11 @@ ons.ready(function(){
             app.currentLabel = app.labels.get({id: e.target.value}); 
             app.entryListView.render();
         },
-        onLabelSettingClick: function(){
-            mainMenu.closeMenu();
+        onShowCompletedClick: function(){
+            app.showCompleted = $('#showCompleted').prop('checked');
+            app.entryListView.render();
+        },
+        onConfigLabelClick: function(){
             mainNavi.pushPage('label-list-page');
         },
         onDeleteClick: function(){
@@ -432,7 +432,7 @@ ons.ready(function(){
                         app.selected = self.collection.get({cid: item.attr('cid')});
                         mainNavi.pushPage('label-detail-page');
                     }
-                    else if (item.hasClass('add-label')){
+                    else if (item.hasClass('js-add')){
                         self.onAddClick(event);
                     }
                 }
@@ -440,7 +440,7 @@ ons.ready(function(){
         },
         onAddClick: function(e){
             var label = new app.Label({
-                text: "Label "
+                name: "Label "
             });
             app.labels.create(label);
             app.selected = label;
@@ -465,10 +465,10 @@ ons.ready(function(){
         */
         el: 'ons-page#label-detail-page',
         ui: {
-            text: '#text'
+            name: '#name'
         },
         bindings: {
-            '#text': 'text'
+            '#name': 'name'
         },
         initialize: function(){
             this.stickit();
@@ -484,7 +484,7 @@ ons.ready(function(){
             });
         },
         events: {
-            'click #del-label': 'onDelClick'
+            'click .js-del': 'onDelClick'
         },
         onDelClick: function(){
             var self = this;
@@ -517,6 +517,7 @@ ons.ready(function(){
         }
     });
 
+    // ↓$(document).on('postpop', 'xxx-page', function(){...としたいので。'prepop' でなく 'postpop' にしたいが無理なので
     mainNavi.on('prepop', function(e){
         $('ons-page#' + e.currentPage.name).trigger('prepop');
     });
